@@ -1,3 +1,5 @@
+fs = require 'fs-plus'
+
 module.exports =
   activate: ->
     atom.workspaceView.command "switch-header-source:switch", => @switch()
@@ -11,29 +13,44 @@ module.exports =
     # go over each replacement rule set until one matches all sub rules
     # that is the one that gets applied
     replacements = [
-      # .C -> .h
-      [['\.C$','.h'],['\/src\/','/include/']],
-      [['\.h$','.C'],['\/include\/','/src/']]
+      # C++ rules with directory hierarchy
+      [[/\.C$/, '.h'], [/\/src\//, '/include/']],
+      [[/\.h$/, '.C'], [/\/include\//, '/src/']],
+      [[/\.cc$/, '.h'], [/\/src\//, '/include/']],
+      [[/\.h$/, '.cc'], [/\/include\//, '/src/']],
+      [[/\.cpp$/, '.hpp'], [/\/src\//, '/include/']],
+      [[/\.hpp$/, '.cpp'], [/\/include\//, '/src/']],
+      [[/\.cpp$/, '.h'], [/\/src\//, '/include/']],
+      [[/\.h$/, '.cpp'], [/\/include\//, '/src/']],
+      # C++ rules without directory hierarchy
+      [[/\.cpp$/, '.h']],
+      [[/\.h$/, '.cpp']],
+      [[/\.cc$/, '.h']],
+      [[/\.h$/, '.cc']],
+      # C rules with directory hierarchy
+      [[/\.c$/, '.h'], [/\/src\//, '/include/']],
+      [[/\.h$/, '.c'], [/\/include\//, '/src/']],
+      # C rules without directory hierarchy
+      [[/\.c$/, '.h']],
+      [[/\.h$/, '.c']]
     ]
 
-    src_path = /\/[Ss]rc\//
-    inc_path = /\/[Ii]nclude\//
+    # try each ruleset
+    for ruleset in replacements
+      new_path = path
 
-    csuffix = /\.(c|cc|c\+\+)$/i
-    hsuffix = /\.(h|hh|h\+\+)$/i
+      # every rule in the set must be applicable
+      fail = false
+      for rule in ruleset
+        if rule[0].test new_path
+          new_path = new_path.replace rule[0], rule[1]
+        else
+          fail = true
 
-    if csuffix.test path
-      # construct header file path
-      new_path = path.replace(csuffix, '.h').replace(src_path, '/include/')
-    else if hsuffix.test path
-      # construct src file path
-      new_path = path.replace(hsuffix, '.C').replace(inc_path, '/src/')
-    else
-      # nothing to do here
-      return
+      # if no rule failed and the file exists, load it
+      if not fail and fs.existsSync new_path
+        # load file, but check if it is already open in any of the panes
+        atom.workspaceView.open new_path, { searchAllPanes: true }
 
-    # load file, but check if it is already open in any of the panes
-    atom.workspaceView.open(new_path, {
-      searchAllPanes: true
-    })
-    #.fail (response) ->
+        # and our work is done
+        return
