@@ -1,7 +1,7 @@
 # See https://atom.io/docs/latest/creating-a-package#menus for more details
 'context-menu':
   '.overlayer':
-      'Enable switch-header-source': 'switch-header-source:toggle'
+      'Switch header/source': 'switch-header-source:switch'
 
 'menu': [
   {
@@ -9,7 +9,7 @@
     'submenu': [
       'label': 'Switch header/source'
       'submenu': [
-        { 'label': 'Toggle', 'command': 'switch-header-source:toggle' }
+        { 'label': 'Toggle', 'command': 'switch-header-source:switch' }
       ]
     ]
   }
