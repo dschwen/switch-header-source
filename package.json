@@ -1,0 +1,14 @@
+{
+  "name": "switch-header-source",
+  "main": "./lib/switch-header-source",
+  "version": "0.0.0",
+  "description": "Quick switching between C/C++ header and source files",
+  "activationEvents": ["switch-header-source:switch"],
+  "repository": "https://github.com/dschwen/switch-header-source",
+  "license": "MIT",
+  "engines": {
+    "atom": ">0.50.0"
+  },
+  "dependencies": {
+  }
+}
