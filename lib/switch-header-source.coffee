@@ -25,5 +25,11 @@ module.exports =
       # nothing to do here
       return
 
-    if not atom.workspace.activePane.activateItemForUri(new_path)
-      editor.insertText(new_path)
+    # let's see if the file is already open in the current pane
+    if atom.workspace.activePane.activateItemForUri(new_path)
+      return
+
+    # otherwise just load it
+    atom.workspaceView.open(new_path, {
+      allowActiveEditorChange: this.allowActiveEditorChange
+    })

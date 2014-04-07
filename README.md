@@ -2,4 +2,6 @@
 
 Quick switching between C/C++ header and source files.
 
-![A screenshot of your spankin' package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
+Use ```Ctrl-Option-s``` to switch from a ```.h``` to the corresponding ```.C``` file.
+
+The logic to achieve this is currently rather crude (employing regular expressions to replace path components ```/src/``` with ```/include/``` and vice versa).
