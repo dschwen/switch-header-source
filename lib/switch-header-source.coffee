@@ -8,6 +8,14 @@ module.exports =
     #path = editor.buffer.file.path
     path = editor.getUri()
 
+    # go over each replacement rule set until one matches all sub rules
+    # that is the one that gets applied
+    replacements = [
+      # .C -> .h
+      [['\.C$','.h'],['\/src\/','/include/']],
+      [['\.h$','.C'],['\/include\/','/src/']]
+    ]
+
     src_path = /\/[Ss]rc\//
     inc_path = /\/[Ii]nclude\//
 
@@ -17,7 +25,6 @@ module.exports =
     if csuffix.test path
       # construct header file path
       new_path = path.replace(csuffix, '.h').replace(src_path, '/include/')
-
     else if hsuffix.test path
       # construct src file path
       new_path = path.replace(hsuffix, '.C').replace(inc_path, '/src/')
@@ -25,11 +32,8 @@ module.exports =
       # nothing to do here
       return
 
-    # let's see if the file is already open in the current pane
-    if atom.workspace.activePane.activateItemForUri(new_path)
-      return
-
-    # otherwise just load it
+    # load file, but check if it is already open in any of the panes
     atom.workspaceView.open(new_path, {
-      allowActiveEditorChange: this.allowActiveEditorChange
+      searchAllPanes: true
     })
+    #.fail (response) ->
