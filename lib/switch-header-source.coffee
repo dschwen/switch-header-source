@@ -27,6 +27,8 @@ module.exports =
       [[/\.h$/, '.cpp']],
       [[/\.cc$/, '.h']],
       [[/\.h$/, '.cc']],
+      [[/\.cc$/, '.hh']],
+      [[/\.hh$/, '.cc']],
       # C rules with directory hierarchy
       [[/\.c$/, '.h'], [/\/src\//, '/include/']],
       [[/\.h$/, '.c'], [/\/include\//, '/src/']],
