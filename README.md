@@ -1,6 +1,7 @@
 # switch-header-source package
 
-Quick switching between C/C++ header and source files.
+Quick switching between C, C++, Objective-C, and Objective-C++ header and source
+files.
 
 Use ```Ctrl-Option-s``` to switch from a ```.h``` to the corresponding ```.C``` file.
 
