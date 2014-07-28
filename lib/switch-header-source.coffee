@@ -29,6 +29,11 @@ module.exports =
       [[/\.h$/, '.cc']],
       [[/\.cc$/, '.hh']],
       [[/\.hh$/, '.cc']],
+      # Objective-C and Objective-C++ rules
+      [[/\.h$/, '.m']],
+      [[/\.hh$/, '.mm']],
+      [[/\.m$/, '.h']],
+      [[/\.mm$/, '.hh']],
       # C rules with directory hierarchy
       [[/\.c$/, '.h'], [/\/src\//, '/include/']],
       [[/\.h$/, '.c'], [/\/include\//, '/src/']],
