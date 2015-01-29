@@ -1,11 +1,7 @@
-# Keybindings require three things to be fully defined: A selector that is
-# matched against the focused element, the keystroke and the command to
-# execute.
-#
-# Below is a basic keybinding which registers on all platforms by applying to
-# the root workspace element.
-
-# For more detailed documentation see
-# https://atom.io/docs/latest/advanced/keymaps
-'atom-text-editor':
+# Mac
+'.platform-darwin atom-text-editor':
   'ctrl-alt-s': 'switch-header-source:switch'
+
+# Linux (at least Ubuntu) needs a different shortcut, as ctrl-alt-s is not captured
+'.platform-linux atom-text-editor, .platform-win32 atom-text-editor':
+  'ctrl-alt-a': 'switch-header-source:switch'
