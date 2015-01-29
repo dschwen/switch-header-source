@@ -2,7 +2,7 @@ fs = require 'fs-plus'
 
 module.exports =
   activate: ->
-    atom.workspaceView.command "switch-header-source:switch", => @switch()
+    atom.commands.add 'atom-text-editor', 'switch-header-source:switch', => @switch()
 
   switch: ->
     # This assumes the active pane item is an editor
@@ -57,7 +57,7 @@ module.exports =
       # if no rule failed and the file exists, load it
       if not fail and fs.existsSync new_path
         # load file, but check if it is already open in any of the panes
-        atom.workspaceView.open new_path, { searchAllPanes: true }
+        atom.workspace.open new_path, { searchAllPanes: true }
 
         # and our work is done
         return
