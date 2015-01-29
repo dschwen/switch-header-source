@@ -7,5 +7,8 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
-'atom-text-editor':
+'.platform-darwin atom-text-editor':
   'ctrl-alt-s': 'switch-header-source:switch'
+
+'.platform-linux atom-text-editor, .platform-win32 atom-text-editor':
+  'alt-s': 'switch-header-source:switch'
