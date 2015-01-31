@@ -1,4 +1,5 @@
-fs = require 'fs-plus'
+fs   = require 'fs-plus'
+path = require 'path'
 
 module.exports =
   activate: ->
@@ -7,57 +8,34 @@ module.exports =
   switch: ->
     # This assumes the active pane item is an editor
     editor = atom.workspace.activePaneItem
-    #path = editor.buffer.file.path
-    path = editor.getUri()
+    file   = editor.getPath()
 
-    # go over each replacement rule set until one matches all sub rules
-    # that is the one that gets applied
-    replacements = [
-      # C++ rules with directory hierarchy
-      [[/\.C$/, '.h'], [/\/src\//, '/include/']],
-      [[/\.h$/, '.C'], [/\/include\//, '/src/']],
-      [[/\.cc$/, '.h'], [/\/src\//, '/include/']],
-      [[/\.h$/, '.cc'], [/\/include\//, '/src/']],
-      [[/\.cpp$/, '.hpp'], [/\/src\//, '/include/']],
-      [[/\.hpp$/, '.cpp'], [/\/include\//, '/src/']],
-      [[/\.cpp$/, '.h'], [/\/src\//, '/include/']],
-      [[/\.h$/, '.cpp'], [/\/include\//, '/src/']],
-      # C++ rules without directory hierarchy
-      [[/\.cpp$/, '.h']],
-      [[/\.h$/, '.cpp']],
-      [[/\.cc$/, '.h']],
-      [[/\.h$/, '.cc']],
-      [[/\.cc$/, '.hh']],
-      [[/\.hh$/, '.cc']],
-      # Objective-C and Objective-C++ rules
-      [[/\.h$/, '.m']],
-      [[/\.hh$/, '.mm']],
-      [[/\.m$/, '.h']],
-      [[/\.mm$/, '.hh']],
-      # C rules with directory hierarchy
-      [[/\.c$/, '.h'], [/\/src\//, '/include/']],
-      [[/\.h$/, '.c'], [/\/include\//, '/src/']],
-      # C rules without directory hierarchy
-      [[/\.c$/, '.h']],
-      [[/\.h$/, '.c']]
-    ]
+    dir  = path.dirname  file
+    name = path.basename file
+    ext  = path.extname  file
 
-    # try each ruleset
-    for ruleset in replacements
-      new_path = path
+    @name = name.substring 0, name.lastIndexOf '.'
 
-      # every rule in the set must be applicable
-      fail = false
-      for rule in ruleset
-        if rule[0].test new_path
-          new_path = new_path.replace rule[0], rule[1]
-        else
-          fail = true
+    if /\.h|\.hpp|\.hh|\.hxx/i.test ext
+      @extensions = ['cpp', 'c', 'cc', 'cxx', 'C', 'm', 'mm']
+      @find dir, 'include', 'src'  if not @findInDir dir
 
-      # if no rule failed and the file exists, load it
-      if not fail and fs.existsSync new_path
-        # load file, but check if it is already open in any of the panes
-        atom.workspace.open new_path, { searchAllPanes: true }
+    else if /\.c|\.cpp|\.cc|\.cxx|\.m|\.mm/i.test ext
+      @extensions = ['h', 'hpp', 'hxx', 'hh']
+      @find dir, 'src', 'include'  if not @findInDir dir
 
-        # and our work is done
-        return
+  # find corresponding file in 'dir' directory
+  findInDir: (dir) ->
+    fullName = path.join dir, @name
+    resolved = fs.resolveExtension fullName, @extensions
+    atom.workspace.open resolved, { searchAllPanes: true } if resolved
+    resolved
+
+  # find corresponding file in alternate subtree
+  find: (currentDir, upperBound, searchFrom) ->
+    nodes = currentDir.split path.sep
+    index = nodes.lastIndexOf upperBound
+    return if index == -1
+    nodes[index] = searchFrom
+    dir = nodes[0..index].join path.sep
+    fs.traverseTree dir, (->), ((d) => not @findInDir d) if not @findInDir dir
