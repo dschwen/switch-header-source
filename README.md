@@ -8,5 +8,5 @@ files.
 ## Mac
 Use ```Ctrl-Option-s``` to switch from a ```.h``` to the corresponding ```.C``` file.
 
-## Linux
-Use ```Ctrl-Alt-a``` to alternate between a header and its corresponding source file.
+## Linux, Windows
+Use ```Alt-o``` to alternate between a header and its corresponding source file.

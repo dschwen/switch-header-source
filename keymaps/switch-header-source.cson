@@ -4,4 +4,4 @@
 
 # Linux (at least Ubuntu) needs a different shortcut, as ctrl-alt-s is not captured
 '.platform-linux atom-text-editor, .platform-win32 atom-text-editor':
-  'ctrl-alt-a': 'switch-header-source:switch'
+  'alt-o': 'switch-header-source:switch'
