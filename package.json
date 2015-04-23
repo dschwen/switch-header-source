@@ -1,10 +1,12 @@
 {
   "name": "switch-header-source",
   "main": "./lib/switch-header-source",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Quick switching between C/C++/Objective-C header and source files",
   "activationCommands": {
-    "atom-text-editor": ["switch-header-source:switch"]
+    "atom-text-editor": [
+      "switch-header-source:switch"
+    ]
   },
   "repository": "https://github.com/dschwen/switch-header-source",
   "license": "MIT",
