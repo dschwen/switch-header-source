@@ -7,7 +7,7 @@ module.exports =
 
   switch: ->
     # This assumes the active pane item is an editor
-    editor = atom.workspace.activePaneItem
+    editor = atom.workspace.getActivePaneItem()
     file   = editor.getPath()
 
     dir  = path.dirname  file
