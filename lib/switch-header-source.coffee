@@ -6,14 +6,14 @@ module.exports =
     headerFileRegex:
       type: 'string'
       default: '\\.h|\\.hpp|\\.hh|\\.hxx'
-      description: """Regular expression to use to identify "header" file
+      description: """Regular expression used to identify "header" file
                       suffixes (matched at the end of the file name, remember
                       to escape \'.\')"""
       order: 1
     definitionFileRegex:
       type: 'string'
       default: '\\.c|\\.cpp|\\.cc|\\.cxx|\\.m|\\.mm'
-      description: """Regular expression to use to identify "definition" file
+      description: """Regular expression used to identify "definition" file
                       suffixes (matched at the end of the file name, remember
                       to escape \'.\')"""
       order: 2
