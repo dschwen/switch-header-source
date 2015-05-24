@@ -3,10 +3,25 @@ path = require 'path'
 
 module.exports =
   config:
+    headerFileRegex:
+      type: 'string'
+      default: '\\.h|\\.hpp|\\.hh|\\.hxx'
+      description: """Regular expression used to identify "header" file
+                      suffixes (matched at the end of the file name, remember
+                      to escape \'.\')"""
+      order: 1
+    definitionFileRegex:
+      type: 'string'
+      default: '\\.c|\\.cpp|\\.cc|\\.cxx|\\.m|\\.mm'
+      description: """Regular expression used to identify "definition" file
+                      suffixes (matched at the end of the file name, remember
+                      to escape \'.\')"""
+      order: 2
     samePane:
       type: 'boolean'
       default: false
       description: 'Keep header and source files in the same pane.'
+      order: 3
 
   activate: ->
     atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
@@ -18,8 +33,14 @@ module.exports =
 
     file   = editor.getPath()
 
-    headerRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx|_def\.lua)$/i
-    definitionRegex = /(.*)(\.c|\.cpp|\.cc|\.cxx|\.m|\.mm|\.lua)$/i
+    headerRegex = new RegExp(
+      '(.*)(' + atom.config.get('switch-header-source.headerFileRegex') + ')$',
+      'i'
+    )
+    definitionRegex = new RegExp(
+      '(.*)(' + atom.config.get('switch-header-source.definitionFileRegex') + ')$',
+      'i'
+    )
 
     dir  = path.dirname  file
     name = path.basename file
