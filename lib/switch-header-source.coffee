@@ -46,43 +46,29 @@ module.exports =
     name = path.basename file
 
     if headerRegex.test name
-      #console.log "header"
-      #console.log name
-      #console.log name.match(headerRegex)
       @name = name.match(headerRegex)
       if not @findInDir dir, definitionRegex
         @find dir, 'include', 'src', definitionRegex
 
     else if definitionRegex.test name
-      #console.log "definition"
-      #console.log name
-      #console.log name.match(definitionRegex)
       @name = name.match(definitionRegex)
       if not @findInDir dir, headerRegex
         @find dir, 'src', 'include', headerRegex
 
   # find corresponding file in 'dir' directory
   findInDir: (dir, expression) ->
-    #console.log @name
-    #console.log @name[1]
     fullName = path.join dir, @name[1]
-    #console.log fullName
     foundFile = null
     for fileName in fs.listSync(dir)
-      #console.log "::: ", fileName
       if fs.isFileSync(fileName)
-        #console.log "  : is a file"
         match = fileName.match(expression)
         foundFile = fileName if match and match[1] == fullName
-        #console.log "  : FOUND MATCH" if foundFile
-        #console.log "  :", foundFile if foundFile
         break if foundFile
     atom.workspace.open foundFile, { searchAllPanes: !atom.config.get('switch-header-source.samePane') } if foundFile
     foundFile
 
   # find corresponding file in alternate subtree
   find: (currentDir, upperBound, searchFrom, expression) ->
-    #console.log "SUBTREE SEARCH"
     nodes = currentDir.split path.sep
     index = nodes.lastIndexOf upperBound
     return if index == -1
