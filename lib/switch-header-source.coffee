@@ -6,6 +6,7 @@ module.exports =
     headerFileRegex:
       type: 'string'
       default: '\\.h|\\.hpp|\\.hh|\\.hxx'
+      title: 'Header file regular expression'
       description: """Regular expression used to identify "header" file
                       suffixes (matched at the end of the file name, remember
                       to escape \'.\')"""
@@ -13,6 +14,7 @@ module.exports =
     definitionFileRegex:
       type: 'string'
       default: '\\.c|\\.cpp|\\.cc|\\.cxx|\\.m|\\.mm'
+      title: 'Definition file regular expression'
       description: """Regular expression used to identify "definition" file
                       suffixes (matched at the end of the file name, remember
                       to escape \'.\')"""
@@ -25,6 +27,22 @@ module.exports =
 
   activate: ->
     atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
+    atom.config.onDidChange 'switch-header-source.headerFileRegex', (value) => @createRegExp()
+    atom.config.onDidChange 'switch-header-source.definitionFileRegex', (value) => @createRegExp()
+    @createRegExp()
+
+  createRegExp: ->
+    try
+      @headerRegex = new RegExp(
+        '(.*)(' + atom.config.get('switch-header-source.headerFileRegex') + ')$'
+      )
+      @definitionRegex = new RegExp(
+        '(.*)(' + atom.config.get('switch-header-source.definitionFileRegex') + ')$'
+      )
+    catch error
+      # TODO: Inform the user of an invalid regular expression?
+      @headerRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx)$/
+      @definitionRegex = /(.*)(\.c|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
 
   switch: ->
     # Check if the active item is a text editor
@@ -32,14 +50,6 @@ module.exports =
     return unless editor?
 
     file   = editor.getPath()
-
-    @headerRegex = new RegExp(
-      '(.*)(' + atom.config.get('switch-header-source.headerFileRegex') + ')$',
-    )
-    @definitionRegex = new RegExp(
-      '(.*)(' + atom.config.get('switch-header-source.definitionFileRegex') + ')$',
-    )
-
     dir  = path.dirname  file
     name = path.basename file
 
