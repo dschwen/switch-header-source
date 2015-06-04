@@ -1,3 +1,4 @@
+$    = require 'jquery'
 fs   = require 'fs-plus'
 path = require 'path'
 
@@ -32,14 +33,25 @@ module.exports =
     @createRegExp()
 
   createRegExp: ->
+    console.log "createRegExp"
     try
+      $('.header-regex-error')?.remove()
+      headerRegexError = $('<span class="header-regex-error">Error in regular expression!</span>')
+      $('#switch-header-source\\.headerFileRegex').after(headerRegexError)
       @headerRegex = new RegExp(
         '(.*)(' + atom.config.get('switch-header-source.headerFileRegex') + ')$'
       )
+      headerRegexError.remove()
+
+      $('.definition-regex-error')?.remove()
+      defintionRegexError = $('<span class="header-regex-error">Error in regular expression!</span>')
+      $('#switch-header-source\\.definitionFileRegex').after(defintionRegexError)
       @definitionRegex = new RegExp(
         '(.*)(' + atom.config.get('switch-header-source.definitionFileRegex') + ')$'
       )
+      defintionRegexError.remove()
     catch error
+      console.log "catch"
       # TODO: Inform the user of an invalid regular expression?
       @headerRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx)$/
       @definitionRegex = /(.*)(\.c|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
