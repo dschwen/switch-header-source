@@ -33,11 +33,10 @@ module.exports =
     @createRegExp()
 
   createRegExp: ->
-    console.log "createRegExp"
     try
       $('.header-regex-error')?.remove()
       headerRegexError = $('<span class="header-regex-error">Error in regular expression!</span>')
-      $('#switch-header-source\\.headerFileRegex').after(headerRegexError)
+      $('#switch-header-source\\.headerFileRegex')?.after(headerRegexError)
       @headerRegex = new RegExp(
         '(.*)(' + atom.config.get('switch-header-source.headerFileRegex') + ')$'
       )
@@ -45,14 +44,12 @@ module.exports =
 
       $('.definition-regex-error')?.remove()
       defintionRegexError = $('<span class="header-regex-error">Error in regular expression!</span>')
-      $('#switch-header-source\\.definitionFileRegex').after(defintionRegexError)
+      $('#switch-header-source\\.definitionFileRegex')?.after(defintionRegexError)
       @definitionRegex = new RegExp(
         '(.*)(' + atom.config.get('switch-header-source.definitionFileRegex') + ')$'
       )
       defintionRegexError.remove()
     catch error
-      console.log "catch"
-      # TODO: Inform the user of an invalid regular expression?
       @headerRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx)$/
       @definitionRegex = /(.*)(\.c|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
 
@@ -61,36 +58,37 @@ module.exports =
     editor = atom.workspace.getActiveTextEditor()
     return unless editor?
 
-    file   = editor.getPath()
+    file = editor.getPath()
     dir  = path.dirname  file
     name = path.basename file
 
     if @headerRegex.test name
-      @name = name.match(@headerRegex)
-      if not @findInDir dir, @definitionRegex
-        @find dir, 'include', 'src', @definitionRegex
+      if @findInDir(dir, name, @headerRegex, @definitionRegex) or
+         @find(dir, name, 'include', 'src', @headerRegex, @definitionRegex)
+        return
 
-    else if @definitionRegex.test name
-      @name = name.match(@definitionRegex)
-      if not @findInDir dir, @headerRegex
-        @find dir, 'src', 'include', @headerRegex
+    if @definitionRegex.test name
+      if @findInDir(dir, name, @definitionRegex, @headerRegex) or
+         @find(dir, name, 'src', 'include', @definitionRegex, @headerRegex)
+        return
 
   # find corresponding file in 'dir' directory
-  findInDir: (dir, expression) ->
-    fullName = path.join dir, @name[1]
+  findInDir: (dir, name, expressionA, expressionB) ->
+    fullName = path.join dir, name.match(expressionA)[1]
     foundFile = null
     for fileName in fs.listSync(dir)
-      foundFile = fileName if fileName.match(expression) and fileName.match(expression)[1] == fullName
+      match = fileName.match(expressionB)
+      foundFile = fileName if match and match[1] == fullName and match[1] != path.join(dir, name)
       break if foundFile
     atom.workspace.open foundFile, { searchAllPanes: !atom.config.get('switch-header-source.samePane') } if foundFile
     foundFile
 
   # find corresponding file in alternate subtree
-  find: (currentDir, upperBound, searchFrom, expression) ->
+  find: (currentDir, name, upperBound, searchFrom, expressionA, expressionB) ->
     nodes = currentDir.split path.sep
     index = nodes.lastIndexOf upperBound
     return if index == -1
     nodes[index] = searchFrom
     dir = nodes[0..index].join path.sep
-    if not @findInDir dir, expression
-      fs.traverseTree dir, (->), ((d) => not @findInDir d, expression)
+    if not @findInDir dir, expressionB
+      fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB)
