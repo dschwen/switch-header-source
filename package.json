@@ -14,7 +14,8 @@
     "atom": ">=0.190.0"
   },
   "dependencies": {
-    "fs-plus": "^2.0.4"
+    "fs-plus": "^2.0.4",
+    "jquery": "^2"
   },
   "keywords": [
     "C++",
