@@ -28,7 +28,7 @@ module.exports =
   findInDir: (dir) ->
     fullName = path.join dir, @name
     resolved = fs.resolveExtension fullName, @extensions
-    atom.workspace.open resolved, { searchAllPanes: true } if resolved
+    atom.workspace.open resolved, { searchAllPanes: !atom.config.get('switch-header-source.samePane') } if resolved
     resolved
 
   # find corresponding file in alternate subtree
@@ -39,3 +39,9 @@ module.exports =
     nodes[index] = searchFrom
     dir = nodes[0..index].join path.sep
     fs.traverseTree dir, (->), ((d) => not @findInDir d) if not @findInDir dir
+
+  config:
+    samePane:
+      type: 'boolean'
+      default: false
+      description: 'Keep header and source files in the same pane.'
