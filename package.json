@@ -4,7 +4,7 @@
   "version": "0.18.0",
   "description": "Quick switching between C/C++/Objective-C header and source files",
   "activationCommands": {
-    "atom-text-editor": [
+    "atom-workspace": [
       "switch-header-source:switch"
     ]
   },
