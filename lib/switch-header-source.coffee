@@ -3,11 +3,13 @@ path = require 'path'
 
 module.exports =
   activate: ->
-    atom.commands.add 'atom-text-editor', 'switch-header-source:switch', => @switch()
+    atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
 
   switch: ->
-    # This assumes the active pane item is an editor
-    editor = atom.workspace.getActivePaneItem()
+    # Check if the active item is a text editor
+    editor = atom.workspace.getActiveTextEditor()
+    return unless editor?
+
     file   = editor.getPath()
 
     dir  = path.dirname  file

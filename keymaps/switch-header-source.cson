@@ -1,7 +1,7 @@
 # Mac
-'.platform-darwin atom-text-editor':
+'.platform-darwin atom-workspace':
   'ctrl-alt-s': 'switch-header-source:switch'
 
 # Linux (at least Ubuntu) needs a different shortcut, as ctrl-alt-s is not captured
-'.platform-linux atom-text-editor, .platform-win32 atom-text-editor':
+'.platform-linux atom-workspace, .platform-win32 atom-workspace':
   'alt-o': 'switch-header-source:switch'
