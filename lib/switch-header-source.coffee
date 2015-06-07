@@ -14,7 +14,7 @@ module.exports =
       order: 1
     definitionFileRegex:
       type: 'string'
-      default: '\\.c|\\.cpp|\\.cc|\\.cxx|\\.m|\\.mm'
+      default: '\\.[cC]|\\.cpp|\\.cc|\\.cxx|\\.m|\\.mm'
       title: 'Definition file regular expression'
       description: """Regular expression used to identify "definition" file
                       suffixes (matched at the end of the file name, remember
@@ -51,7 +51,7 @@ module.exports =
       defintionRegexError.remove()
     catch error
       @headerRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx)$/
-      @definitionRegex = /(.*)(\.c|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
+      @definitionRegex = /(.*)(\.[cC]|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
 
   switch: ->
     # Check if the active item is a text editor
@@ -90,5 +90,5 @@ module.exports =
     return if index == -1
     nodes[index] = searchFrom
     dir = nodes[0..index].join path.sep
-    if not @findInDir dir, expressionB
+    if not @findInDir dir, name, expressionA, expressionB
       fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB)
