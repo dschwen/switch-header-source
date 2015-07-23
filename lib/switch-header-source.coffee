@@ -26,6 +26,9 @@ module.exports =
       description: 'Keep header and source files in the same pane.'
       order: 3
 
+  file: null
+  pathCache: {}
+
   activate: ->
     atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
     atom.config.onDidChange 'switch-header-source.headerFileRegex', (value) => @createRegExp()
@@ -58,9 +61,15 @@ module.exports =
     editor = atom.workspace.getActiveTextEditor()
     return unless editor?
 
-    file = editor.getPath()
-    dir  = path.dirname  file
-    name = path.basename file
+    @file = editor.getPath()
+
+    # try the path cache for faster switching
+    if @file of @pathCache and @pathCache[@file]? and fs.existsSync(@pathCache[@file])
+      atom.workspace.open @pathCache[@file], { searchAllPanes: !atom.config.get('switch-header-source.samePane') }
+      return
+
+    dir  = path.dirname  @file
+    name = path.basename @file
 
     if @headerRegex.test name
       if @findInDir(dir, name, @headerRegex, @definitionRegex) or
@@ -76,11 +85,16 @@ module.exports =
   findInDir: (dir, name, expressionA, expressionB) ->
     fullName = path.join dir, name.match(expressionA)[1]
     foundFile = null
+
     for fileName in fs.listSync(dir)
       match = fileName.match(expressionB)
       foundFile = fileName if match and match[1] == fullName and match[1] != path.join(dir, name)
       break if foundFile
-    atom.workspace.open foundFile, { searchAllPanes: !atom.config.get('switch-header-source.samePane') } if foundFile
+
+    if foundFile
+      atom.workspace.open foundFile, { searchAllPanes: !atom.config.get('switch-header-source.samePane') }
+      @pathCache[@file] = foundFile
+
     foundFile
 
   # find corresponding file in alternate subtree
