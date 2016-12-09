@@ -103,6 +103,8 @@ module.exports =
     index = nodes.lastIndexOf upperBound
     return if index == -1
     nodes[index] = searchFrom
-    dir = nodes[0..index].join path.sep
-    if not @findInDir dir, name, expressionA, expressionB
-      fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB)
+    perfectDir = nodes.join path.sep
+    if not @findInDir perfectDir, name, expressionA, expressionB
+      dir = nodes[0..index].join path.sep
+      if not @findInDir dir, name, expressionA, expressionB
+        fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB)
