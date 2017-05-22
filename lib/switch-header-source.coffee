@@ -107,4 +107,4 @@ module.exports =
     if not @findInDir perfectDir, name, expressionA, expressionB
       dir = nodes[0..index].join path.sep
       if not @findInDir dir, name, expressionA, expressionB
-        fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB)
+        fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB), (->)
