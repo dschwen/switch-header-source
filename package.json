@@ -1,7 +1,7 @@
 {
   "name": "switch-header-source",
   "main": "./lib/switch-header-source",
-  "version": "0.24.2",
+  "version": "0.24.3",
   "description": "Quick switching between C/C++/Objective-C header and source files",
   "consumedServices": {
     "busy-signal": {
@@ -20,7 +20,9 @@
     "jquery": "^2",
     "atom-package-deps": "latest"
   },
-  "package-deps": ["busy-signal"],
+  "package-deps": [
+    "busy-signal"
+  ],
   "keywords": [
     "C++",
     "C",
