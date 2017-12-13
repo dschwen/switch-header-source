@@ -88,12 +88,12 @@ module.exports =
     try
       $('.file-regex-error')?.remove()
       fileRegexError = $('<span class="file-regex-error">Error in regular expression!</span>')
-      $('#switch-header-source\\.headerFileRegex')?.after(fileRegexError)
+      $('#switch-header-source\\.fileRegex')?.after(fileRegexError)
       @fileRegex = new RegExp(atom.config.get('switch-header-source.fileRegex'))
       fileRegexError.remove()
 
     catch error
-      @fileRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx|\.[cC]|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
+      @fileRegex = /(.*)(\.h(pp|xx)|\.(hh|cc|mm)|\.[mhcC]|\.c(pp|xx))$/
 
   switch: ->
     # Check if the active item is a text editor
