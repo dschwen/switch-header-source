@@ -1,6 +1,7 @@
 $    = require 'jquery'
 fs   = require 'fs-plus'
 path = require 'path'
+{CompositeDisposable} = require 'atom'
 pathLoader  = require 'fuzzy-finder/lib/path-loader'
 
 module.exports =
@@ -21,6 +22,8 @@ module.exports =
   active: false
   file: null
   loadPathsTask: null
+  subscriptions: null
+  busyProvider: null
   switchMap: {}
   projectPathsSubscription: null
 
@@ -28,10 +31,17 @@ module.exports =
     atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
     atom.config.onDidChange 'switch-header-source.fileRegex', (value) => @createRegExp()
     @createRegExp()
+    @subscriptions = new CompositeDisposable()
 
     @active = true
     process.nextTick () =>
       @startLoadPathsTask()
+
+  deactivate: ->
+    @subscriptions.dispose()
+
+  consumeSignal: (registry) ->
+    @busyProvider = registry.create()
 
   getKey: (filePath) ->
     base = path.basename filePath
@@ -47,7 +57,7 @@ module.exports =
 
     PathLoader = require 'fuzzy-finder/lib/path-loader'
 
-    console.log 'Start pathloader task'
+    @busyProvider.add('Indexing project')
     @loadPathsTask = PathLoader.startTask (projectPaths) =>
       @switchMap = {}
       for filePath in projectPaths
@@ -57,7 +67,7 @@ module.exports =
           entry.push filePath
           @switchMap[key] = entry
 
-      console.log @switchMap
+      @busyProvider.clear()
 
     @projectPathsSubscription = atom.project.onDidChangePaths () =>
       @projectPaths = null
@@ -71,6 +81,8 @@ module.exports =
     if @loadPathsTask != null
       @loadPathsTask.terminate()
     @loadPathsTask = null
+
+    @busyProvider.clear()
 
   createRegExp: ->
     try
