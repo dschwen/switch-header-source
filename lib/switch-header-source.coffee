@@ -1,110 +1,105 @@
 $    = require 'jquery'
 fs   = require 'fs-plus'
 path = require 'path'
+pathLoader  = require 'fuzzy-finder/lib/path-loader'
 
 module.exports =
   config:
-    headerFileRegex:
+    fileRegex:
       type: 'string'
-      default: '\\.h|\\.hpp|\\.hh|\\.hxx'
-      title: 'Header file regular expression'
-      description: """Regular expression used to identify "header" file
-                      suffixes (matched at the end of the file name, remember
-                      to escape \'.\')"""
+      default: '(.*)(\\.h(pp|xx)|\\.(hh|cc|mm)|\\.[mhcC]|\\.c(pp|xx))$'
+      title: 'Tracked file regular expression'
+      description: """Regular expression used to identify all files the plugin switches
+                      between. The first capture group holds the common base name of the files."""
       order: 1
-    definitionFileRegex:
-      type: 'string'
-      default: '\\.[cC]|\\.cpp|\\.cc|\\.cxx|\\.m|\\.mm'
-      title: 'Definition file regular expression'
-      description: """Regular expression used to identify "definition" file
-                      suffixes (matched at the end of the file name, remember
-                      to escape \'.\')"""
-      order: 2
     samePane:
       type: 'boolean'
       default: false
       description: 'Keep header and source files in the same pane.'
-      order: 3
+      order: 2
 
+  active: false
   file: null
-  pathCache: {}
+  loadPathsTask: null
+  switchMap: {}
+  projectPathsSubscription: null
 
   activate: ->
     atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
-    atom.config.onDidChange 'switch-header-source.headerFileRegex', (value) => @createRegExp()
-    atom.config.onDidChange 'switch-header-source.definitionFileRegex', (value) => @createRegExp()
+    atom.config.onDidChange 'switch-header-source.fileRegex', (value) => @createRegExp()
     @createRegExp()
+
+    @active = true
+    process.nextTick () =>
+      @startLoadPathsTask()
+
+  getKey: (filePath) ->
+    base = path.basename filePath
+    match = @fileRegex.exec base
+    if match
+      return match[1]
+    return null
+
+  startLoadPathsTask: ->
+    @stopLoadPathsTask()
+
+    return unless this.active or atom.project.getPaths().length == 0
+
+    PathLoader = require 'fuzzy-finder/lib/path-loader'
+
+    console.log 'Start pathloader task'
+    @loadPathsTask = PathLoader.startTask (projectPaths) =>
+      @switchMap = {}
+      for filePath in projectPaths
+        key = @getKey filePath
+        if key
+          entry = @switchMap[key] or []
+          entry.push filePath
+          @switchMap[key] = entry
+
+      console.log @switchMap
+
+    @projectPathsSubscription = atom.project.onDidChangePaths () =>
+      @projectPaths = null
+      @stopLoadPathsTask()
+
+  stopLoadPathsTask: ->
+    if this.projectPathsSubscription != null
+      @projectPathsSubscription.dispose()
+    @projectPathsSubscription = null
+
+    if @loadPathsTask != null
+      @loadPathsTask.terminate()
+    @loadPathsTask = null
 
   createRegExp: ->
     try
-      $('.header-regex-error')?.remove()
-      headerRegexError = $('<span class="header-regex-error">Error in regular expression!</span>')
-      $('#switch-header-source\\.headerFileRegex')?.after(headerRegexError)
-      @headerRegex = new RegExp(
-        '(.*)(' + atom.config.get('switch-header-source.headerFileRegex') + ')$'
-      )
-      headerRegexError.remove()
+      $('.file-regex-error')?.remove()
+      fileRegexError = $('<span class="file-regex-error">Error in regular expression!</span>')
+      $('#switch-header-source\\.headerFileRegex')?.after(fileRegexError)
+      @fileRegex = new RegExp(atom.config.get('switch-header-source.fileRegex'))
+      fileRegexError.remove()
 
-      $('.definition-regex-error')?.remove()
-      defintionRegexError = $('<span class="header-regex-error">Error in regular expression!</span>')
-      $('#switch-header-source\\.definitionFileRegex')?.after(defintionRegexError)
-      @definitionRegex = new RegExp(
-        '(.*)(' + atom.config.get('switch-header-source.definitionFileRegex') + ')$'
-      )
-      defintionRegexError.remove()
     catch error
-      @headerRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx)$/
-      @definitionRegex = /(.*)(\.[cC]|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
+      @fileRegex = /(.*)(\.h|\.hpp|\.hh|\.hxx|\.[cC]|\.cpp|\.cc|\.cxx|\.m|\.mm)$/
 
   switch: ->
     # Check if the active item is a text editor
     editor = atom.workspace.getActiveTextEditor()
     return unless editor?
 
-    @file = editor.getPath()
-
-    # try the path cache for faster switching
-    if @file of @pathCache and @pathCache[@file]? and fs.existsSync(@pathCache[@file])
-      atom.workspace.open @pathCache[@file], { searchAllPanes: !atom.config.get('switch-header-source.samePane') }
-      return
-
-    dir  = path.dirname  @file
-    name = path.basename @file
-
-    if @headerRegex.test name
-      if @findInDir(dir, name, @headerRegex, @definitionRegex) or
-         @find(dir, name, 'include', 'src', @headerRegex, @definitionRegex)
-        return
-
-    if @definitionRegex.test name
-      if @findInDir(dir, name, @definitionRegex, @headerRegex) or
-         @find(dir, name, 'src', 'include', @definitionRegex, @headerRegex)
-        return
-
-  # find corresponding file in 'dir' directory
-  findInDir: (dir, name, expressionA, expressionB) ->
-    fullName = path.join dir, name.match(expressionA)[1]
-    foundFile = null
-
-    for fileName in fs.listSync(dir)
-      match = fileName.match(expressionB)
-      foundFile = fileName if match and match[1] == fullName and match[1] != path.join(dir, name)
-      break if foundFile
-
-    if foundFile
-      atom.workspace.open foundFile, { searchAllPanes: !atom.config.get('switch-header-source.samePane') }
-      @pathCache[@file] = foundFile
-
-    foundFile
-
-  # find corresponding file in alternate subtree
-  find: (currentDir, name, upperBound, searchFrom, expressionA, expressionB) ->
-    nodes = currentDir.split path.sep
-    index = nodes.lastIndexOf upperBound
-    return if index == -1
-    nodes[index] = searchFrom
-    perfectDir = nodes.join path.sep
-    if not @findInDir perfectDir, name, expressionA, expressionB
-      dir = nodes[0..index].join path.sep
-      if not @findInDir dir, name, expressionA, expressionB
-        fs.traverseTree dir, (->), ((d) => not @findInDir d, name, expressionA, expressionB), (->)
+    # full path of the current file
+    filePath = editor.getPath()
+    # get the base name of the current file (if it matched teh fileRegexp)
+    key = @getKey filePath
+    if key
+      # get the list of matching files from teh switchMap
+      entry = @switchMap[key]
+      if entry
+        # find the current file's index in the entry..
+        index = entry.indexOf filePath
+        if index >= 0
+          # ..and switch to the next one
+          atom.workspace.open entry[(index + 1) % entry.length], {
+            searchAllPanes: !atom.config.get('switch-header-source.samePane')
+          }
