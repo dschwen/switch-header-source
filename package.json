@@ -17,9 +17,7 @@
   },
   "dependencies": {
     "fs-plus": "^3.0.0",
-    "jquery": "^2"
-  },
-  "packageDependencies": {
+    "jquery": "^2",
     "fuzzy-finder": "1.6.1"
   },
   "keywords": [

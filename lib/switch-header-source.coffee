@@ -2,7 +2,9 @@ $    = require 'jquery'
 fs   = require 'fs-plus'
 path = require 'path'
 {CompositeDisposable} = require 'atom'
-pathLoader  = require 'fuzzy-finder/lib/path-loader'
+
+# suuper sketchy!
+pathLoader  = require module.parent.paths[1] + '/fuzzy-finder/lib/path-loader'
 
 module.exports =
   config:
@@ -46,6 +48,7 @@ module.exports =
 
   consumeSignal: (registry) ->
     @busyProvider = registry.create()
+    @subscriptions.add(@busyProvider)
 
   getKey: (filePath) ->
     base = path.basename filePath
@@ -76,15 +79,15 @@ module.exports =
 
     return unless this.active or atom.project.getPaths().length == 0
 
-    PathLoader = require 'fuzzy-finder/lib/path-loader'
-
-    @busyProvider.add('Indexing project')
-    @loadPathsTask = PathLoader.startTask (projectPaths) =>
+    if @busyProvider
+      @busyProvider.add('Indexing project')
+    @loadPathsTask = pathLoader.startTask (projectPaths) =>
       @switchMap = {}
       for filePath in projectPaths
         @switchMapAdd filePath
 
-      @busyProvider.clear()
+      if @busyProvider
+        @busyProvider.clear()
 
     @projectPathsSubscription = atom.project.onDidChangePaths () =>
       @projectPaths = null
@@ -115,7 +118,8 @@ module.exports =
       @loadPathsTask.terminate()
     @loadPathsTask = null
 
-    @busyProvider.clear()
+    if @busyProvider
+      @busyProvider.clear()
 
   createRegExp: ->
     try
@@ -138,9 +142,8 @@ module.exports =
     # get the base name of the current file (if it matched the fileRegexp)
     key = @getKey filePath
     if key
-      # get the list of matching files from teh switchMap
+      # get the list of matching files from the switchMap
       entry = @switchMap[key]
-      console.log entry
       if entry
         # find the current file's index in the entry..
         index = entry.indexOf filePath
