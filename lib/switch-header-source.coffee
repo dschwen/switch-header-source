@@ -3,9 +3,6 @@ fs   = require 'fs-plus'
 path = require 'path'
 {CompositeDisposable} = require 'atom'
 
-# suuper sketchy!
-pathLoader  = require module.parent.paths[1] + '/fuzzy-finder/lib/path-loader'
-
 module.exports =
   config:
     fileRegex:
@@ -79,8 +76,17 @@ module.exports =
 
     return unless this.active or atom.project.getPaths().length == 0
 
+    # get access to teh fuzzy-finder core package
+    fuzzyFinder = atom.packages.getLoadedPackage('fuzzy-finder')
+    if !fuzzyFinder
+      atom.notifications.addError 'fuzzy-finder core package is missing, unable to index project.'
+      return
+    pathLoader = require(path.join(fuzzyFinder.path, 'lib/path-loader'))
+
     if @busyProvider
       @busyProvider.add('Indexing project')
+
+    # start the path-loader task
     @loadPathsTask = pathLoader.startTask (projectPaths) =>
       @switchMap = {}
       for filePath in projectPaths
