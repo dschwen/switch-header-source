@@ -28,17 +28,20 @@ module.exports =
   projectFilesSubscription: null
 
   activate: ->
-    atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
-    atom.config.onDidChange 'switch-header-source.fileRegex', (value) =>
+    # give the user a chance to install busy-signal
+    require('atom-package-deps').install('switch-header-source').then =>
+      # once it is installed continue with the activation
+      atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
+      atom.config.onDidChange 'switch-header-source.fileRegex', (value) =>
+        @createRegExp()
+        @startLoadPathsTask()
+
       @createRegExp()
-      @startLoadPathsTask()
+      @subscriptions = new CompositeDisposable()
 
-    @createRegExp()
-    @subscriptions = new CompositeDisposable()
-
-    @active = true
-    process.nextTick () =>
-      @startLoadPathsTask()
+      @active = true
+      process.nextTick () =>
+        @startLoadPathsTask()
 
   deactivate: ->
     @subscriptions.dispose()

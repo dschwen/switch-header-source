@@ -17,8 +17,10 @@
   },
   "dependencies": {
     "fs-plus": "^3.0.0",
-    "jquery": "^2"
+    "jquery": "^2",
+    "atom-package-deps": "latest"
   },
+  "package-deps": ["busy-signal"],
   "keywords": [
     "C++",
     "C",
