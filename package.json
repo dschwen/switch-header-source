@@ -3,10 +3,12 @@
   "main": "./lib/switch-header-source",
   "version": "0.22.0",
   "description": "Quick switching between C/C++/Objective-C header and source files",
-  "activationCommands": {
-    "atom-workspace": [
-      "switch-header-source:switch"
-    ]
+  "consumedServices": {
+    "busy-signal": {
+      "versions": {
+        "1.0.0": "consumeSignal"
+      }
+    }
   },
   "repository": "https://github.com/dschwen/switch-header-source",
   "license": "MIT",
@@ -16,6 +18,9 @@
   "dependencies": {
     "fs-plus": "^3.0.0",
     "jquery": "^2"
+  },
+  "packageDependencies": {
+    "fuzzy-finder": "1.6.1"
   },
   "keywords": [
     "C++",
