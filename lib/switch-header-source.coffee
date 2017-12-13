@@ -26,10 +26,14 @@ module.exports =
   busyProvider: null
   switchMap: {}
   projectPathsSubscription: null
+  projectFilesSubscription: null
 
   activate: ->
     atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
-    atom.config.onDidChange 'switch-header-source.fileRegex', (value) => @createRegExp()
+    atom.config.onDidChange 'switch-header-source.fileRegex', (value) =>
+      @createRegExp()
+      @startLoadPathsTask()
+
     @createRegExp()
     @subscriptions = new CompositeDisposable()
 
@@ -50,6 +54,23 @@ module.exports =
       return match[1]
     return null
 
+  switchMapAdd: (filePath) ->
+    key = @getKey filePath
+    if key
+      entry = @switchMap[key] or []
+      entry.push filePath
+      @switchMap[key] = entry
+
+  switchMapDelete: (filePath) ->
+    key = @getKey filePath
+    if key
+      entry = @switchMap[key]
+      if entry
+        index = entry.indexOf filePath
+        if index >= 0
+          entry.splice index, 1
+        @switchMap[key] = entry
+
   startLoadPathsTask: ->
     @stopLoadPathsTask()
 
@@ -61,11 +82,7 @@ module.exports =
     @loadPathsTask = PathLoader.startTask (projectPaths) =>
       @switchMap = {}
       for filePath in projectPaths
-        key = @getKey filePath
-        if key
-          entry = @switchMap[key] or []
-          entry.push filePath
-          @switchMap[key] = entry
+        @switchMapAdd filePath
 
       @busyProvider.clear()
 
@@ -73,10 +90,26 @@ module.exports =
       @projectPaths = null
       @stopLoadPathsTask()
 
+    @projectFilesSubscription = atom.project.onDidChangeFiles (events) =>
+      for event in events
+        if event.action == 'created'
+          @switchMapAdd event.path
+
+        if event.action == 'deleted'
+          @switchMapDelete event.path
+
+        if event.action == 'renamed'
+          @switchMapDelete event.oldPath
+          @switchMapAdd event.path
+
   stopLoadPathsTask: ->
-    if this.projectPathsSubscription != null
+    if @projectPathsSubscription != null
       @projectPathsSubscription.dispose()
+    if @projectFilesSubscription != null
+      @projectFilesSubscription.dispose()
+
     @projectPathsSubscription = null
+    @projectFilesSubscription = null
 
     if @loadPathsTask != null
       @loadPathsTask.terminate()
@@ -102,11 +135,12 @@ module.exports =
 
     # full path of the current file
     filePath = editor.getPath()
-    # get the base name of the current file (if it matched teh fileRegexp)
+    # get the base name of the current file (if it matched the fileRegexp)
     key = @getKey filePath
     if key
       # get the list of matching files from teh switchMap
       entry = @switchMap[key]
+      console.log entry
       if entry
         # find the current file's index in the entry..
         index = entry.indexOf filePath
