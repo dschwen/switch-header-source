@@ -23,7 +23,7 @@ module.exports =
   loadPathsTask: null
   subscriptions: null
   busyProvider: null
-  switchMap: {}
+  switchMap: new Map
   projectPathsSubscription: null
   projectFilesSubscription: null
 
@@ -60,19 +60,19 @@ module.exports =
   switchMapAdd: (filePath) ->
     key = @getKey filePath
     if key
-      entry = @switchMap[key] or []
+      entry = @switchMap.get(key) or []
       entry.push filePath
-      @switchMap[key] = entry
+      @switchMap.set key, entry
 
   switchMapDelete: (filePath) ->
     key = @getKey filePath
     if key
-      entry = @switchMap[key]
+      entry = @switchMap.get key
       if entry
         index = entry.indexOf filePath
         if index >= 0
           entry.splice index, 1
-        @switchMap[key] = entry
+        @switchMap.set key, entry
 
   startLoadPathsTask: ->
     @stopLoadPathsTask()
@@ -91,7 +91,7 @@ module.exports =
 
     # start the path-loader task
     @loadPathsTask = pathLoader.startTask (projectPaths) =>
-      @switchMap = {}
+      @switchMap = new Map
       for filePath in projectPaths
         @switchMapAdd filePath
 
@@ -152,7 +152,7 @@ module.exports =
     key = @getKey filePath
     if key
       # get the list of matching files from the switchMap
-      entry = @switchMap[key]
+      entry = @switchMap.get key
       if entry
         # find the current file's index in the entry..
         index = entry.indexOf filePath
