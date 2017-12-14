@@ -28,6 +28,7 @@ module.exports =
   projectFilesSubscription: null
 
   activate: ->
+    @subscriptions = new CompositeDisposable()
     # give the user a chance to install busy-signal
     require('atom-package-deps').install('switch-header-source').then =>
       # once it is installed continue with the activation
@@ -37,7 +38,6 @@ module.exports =
         @startLoadPathsTask()
 
       @createRegExp()
-      @subscriptions = new CompositeDisposable()
 
       @active = true
       process.nextTick () =>
