@@ -1,7 +1,9 @@
 # Mac
 '.platform-darwin atom-workspace':
   'ctrl-alt-s': 'switch-header-source:switch'
+  'shift-ctrl-alt-s': 'switch-header-source:switch-previous'
 
 # Linux (at least Ubuntu) needs a different shortcut, as ctrl-alt-s is not captured
 '.platform-linux atom-workspace, .platform-win32 atom-workspace':
   'alt-o': 'switch-header-source:switch'
+  'shift-alt-o': 'switch-header-source:switch-previous'

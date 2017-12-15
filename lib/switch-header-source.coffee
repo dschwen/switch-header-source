@@ -19,7 +19,6 @@ module.exports =
       order: 2
 
   active: false
-  file: null
   loadPathsTask: null
   subscriptions: null
   busyProvider: null
@@ -32,7 +31,8 @@ module.exports =
     # give the user a chance to install busy-signal
     require('atom-package-deps').install('switch-header-source').then =>
       # once it is installed continue with the activation
-      atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switch()
+      atom.commands.add 'atom-workspace', 'switch-header-source:switch', => @switchNext()
+      atom.commands.add 'atom-workspace', 'switch-header-source:switch-previous', => @switchPrevious()
       atom.config.onDidChange 'switch-header-source.fileRegex', (value) =>
         @createRegExp()
         @startLoadPathsTask()
@@ -50,6 +50,7 @@ module.exports =
     @busyProvider = registry.create()
     @subscriptions.add(@busyProvider)
 
+  # match Tracked file regular expression to obtain key
   getKey: (filePath) ->
     base = path.basename filePath
     match = @fileRegex.exec base
@@ -57,6 +58,7 @@ module.exports =
       return match[1]
     return null
 
+  # insert file path into the switch map
   switchMapAdd: (filePath) ->
     key = @getKey filePath
     if key
@@ -64,6 +66,7 @@ module.exports =
       entry.push filePath
       @switchMap.set key, entry
 
+  # remove file path from the switch map
   switchMapDelete: (filePath) ->
     key = @getKey filePath
     if key
@@ -141,7 +144,15 @@ module.exports =
     catch error
       @fileRegex = /(.*)(\.h(pp|xx)|\.(hh|cc|mm)|\.[mhcC]|\.c(pp|xx))$/
 
-  switch: ->
+  # switch to the next file in the current cycle
+  switchNext: ->
+    @switch 1
+
+  # switch to the previous file in the current cycle
+  switchPrevious: ->
+    @switch -1
+
+  switch: (step) ->
     # Check if the active item is a text editor
     editor = atom.workspace.getActiveTextEditor()
     return unless editor?
@@ -158,6 +169,6 @@ module.exports =
         index = entry.indexOf filePath
         if index >= 0
           # ..and switch to the next one
-          atom.workspace.open entry[(index + 1) % entry.length], {
+          atom.workspace.open entry[(index + entry.length + step) % entry.length], {
             searchAllPanes: !atom.config.get('switch-header-source.samePane')
           }
