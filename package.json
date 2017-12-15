@@ -13,7 +13,7 @@
   "repository": "https://github.com/dschwen/switch-header-source",
   "license": "MIT",
   "engines": {
-    "atom": ">=0.190.0"
+    "atom": ">=1.23.0"
   },
   "dependencies": {
     "fs-plus": "^3.0.0",
