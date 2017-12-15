@@ -17,6 +17,11 @@ module.exports =
       default: false
       description: 'Keep header and source files in the same pane.'
       order: 2
+    newTabPending:
+      type: 'boolean'
+      default: false
+      description: 'Open new files as pending tabs.'
+      order: 3
 
   active: false
   loadPathsTask: null
@@ -170,5 +175,6 @@ module.exports =
         if index >= 0
           # ..and switch to the next one
           atom.workspace.open entry[(index + entry.length + step) % entry.length], {
-            searchAllPanes: !atom.config.get('switch-header-source.samePane')
+            searchAllPanes: !atom.config.get('switch-header-source.samePane'),
+            pending: atom.config.get('switch-header-source.newTabPending')
           }
