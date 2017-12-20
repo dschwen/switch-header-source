@@ -70,6 +70,7 @@ module.exports =
       entry = @switchMap.get(key) or []
       entry.push filePath
       @switchMap.set key, entry
+      console.log 'added', filePath, key, entry
 
   # remove file path from the switch map
   switchMapDelete: (filePath) ->
@@ -81,6 +82,7 @@ module.exports =
         if index >= 0
           entry.splice index, 1
         @switchMap.set key, entry
+        console.log 'deleted', filePath, key, entry
 
   startLoadPathsTask: ->
     @stopLoadPathsTask()
@@ -112,6 +114,8 @@ module.exports =
 
     @projectFilesSubscription = atom.project.onDidChangeFiles (events) =>
       for event in events
+        console.log event
+
         if event.action == 'created'
           @switchMapAdd event.path
 
@@ -164,14 +168,19 @@ module.exports =
 
     # full path of the current file
     filePath = editor.getPath()
+    console.log 'filePath =', ('"' + filePath + '"')
+
     # get the base name of the current file (if it matched the fileRegexp)
     key = @getKey filePath
+    console.log 'key =', key
     if key
       # get the list of matching files from the switchMap
       entry = @switchMap.get key
+      console.log 'entry =', entry
       if entry
         # find the current file's index in the entry..
         index = entry.indexOf filePath
+        console.log 'index =', index
         if index >= 0
           # ..and switch to the next one
           atom.workspace.open entry[(index + entry.length + step) % entry.length], {
