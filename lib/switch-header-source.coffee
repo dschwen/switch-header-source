@@ -163,7 +163,8 @@ module.exports =
     return unless editor?
 
     # full path of the current file
-    filePath = editor.getPath()
+    filePath = fs.realpathSync(editor.getPath())
+
     # get the base name of the current file (if it matched the fileRegexp)
     key = @getKey filePath
     if key
