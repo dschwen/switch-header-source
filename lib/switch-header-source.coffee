@@ -68,7 +68,7 @@ module.exports =
     key = @getKey filePath
     if key
       entry = @switchMap.get(key) or []
-      entry.push filePath
+      entry.push fs.realpathSync(filePath)
       @switchMap.set key, entry
 
   # remove file path from the switch map
@@ -77,7 +77,7 @@ module.exports =
     if key
       entry = @switchMap.get key
       if entry
-        index = entry.indexOf filePath
+        index = entry.indexOf fs.realpathSync(filePath)
         if index >= 0
           entry.splice index, 1
         @switchMap.set key, entry
