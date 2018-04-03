@@ -68,8 +68,11 @@ module.exports =
     key = @getKey filePath
     if key
       entry = @switchMap.get(key) or []
-      entry.push fs.realpathSync(filePath)
-      @switchMap.set key, entry
+      try
+        entry.push fs.realpathSync(filePath)
+        @switchMap.set key, entry
+      catch error
+        console.log error
 
   # remove file path from the switch map
   switchMapDelete: (filePath) ->
@@ -77,10 +80,13 @@ module.exports =
     if key
       entry = @switchMap.get key
       if entry
-        index = entry.indexOf fs.realpathSync(filePath)
-        if index >= 0
-          entry.splice index, 1
-        @switchMap.set key, entry
+        try
+          index = entry.indexOf fs.realpathSync(filePath)
+          if index >= 0
+            entry.splice index, 1
+          @switchMap.set key, entry
+        catch error
+          console.log error
 
   startLoadPathsTask: ->
     @stopLoadPathsTask()
@@ -163,19 +169,23 @@ module.exports =
     return unless editor?
 
     # full path of the current file
-    filePath = fs.realpathSync(editor.getPath())
+    try
+      filePath = fs.realpathSync(editor.getPath())
 
-    # get the base name of the current file (if it matched the fileRegexp)
-    key = @getKey filePath
-    if key
-      # get the list of matching files from the switchMap
-      entry = @switchMap.get key
-      if entry
-        # find the current file's index in the entry..
-        index = entry.indexOf filePath
-        if index >= 0
-          # ..and switch to the next one
-          atom.workspace.open entry[(index + entry.length + step) % entry.length], {
-            searchAllPanes: !atom.config.get('switch-header-source.samePane'),
-            pending: atom.config.get('switch-header-source.newTabPending')
-          }
+      # get the base name of the current file (if it matched the fileRegexp)
+      key = @getKey filePath
+      if key
+        # get the list of matching files from the switchMap
+        entry = @switchMap.get key
+        if entry
+          # find the current file's index in the entry..
+          index = entry.indexOf filePath
+          if index >= 0
+            # ..and switch to the next one
+            atom.workspace.open entry[(index + entry.length + step) % entry.length], {
+              searchAllPanes: !atom.config.get('switch-header-source.samePane'),
+              pending: atom.config.get('switch-header-source.newTabPending')
+            }
+
+    catch error
+      console.log error
