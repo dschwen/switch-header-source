@@ -69,7 +69,9 @@ module.exports =
     if key
       entry = @switchMap.get(key) or []
       try
-        entry.push fs.realpathSync(filePath)
+        realPath = fs.realpathSync(filePath)
+        if entry.indexOf(realPath) < 0
+          entry.push realPath
         @switchMap.set key, entry
       catch error
         console.log error
