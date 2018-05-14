@@ -83,7 +83,11 @@ module.exports =
       entry = @switchMap.get key
       if entry
         try
-          index = entry.indexOf fs.realpathSync(filePath)
+          try
+            filePath = fs.realpathSync filePath
+          catch
+            console.log filePath, 'has already disappeared'
+          index = entry.indexOf filePath
           if index >= 0
             entry.splice index, 1
           @switchMap.set key, entry
@@ -179,6 +183,7 @@ module.exports =
       if key
         # get the list of matching files from the switchMap
         entry = @switchMap.get key
+        # console.log entry
         if entry
           # find the current file's index in the entry..
           index = entry.indexOf filePath
