@@ -99,7 +99,7 @@ module.exports =
 
     return unless this.active or atom.project.getPaths().length == 0
 
-    # get access to teh fuzzy-finder core package
+    # get access to the fuzzy-finder core package
     fuzzyFinder = atom.packages.getLoadedPackage('fuzzy-finder')
     if !fuzzyFinder
       atom.notifications.addError 'fuzzy-finder core package is missing, unable to index project.'
@@ -121,6 +121,7 @@ module.exports =
     @projectPathsSubscription = atom.project.onDidChangePaths () =>
       @projectPaths = null
       @stopLoadPathsTask()
+      @startLoadPathsTask()
 
     @projectFilesSubscription = atom.project.onDidChangeFiles (events) =>
       for event in events
