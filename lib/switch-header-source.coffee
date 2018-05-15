@@ -120,11 +120,19 @@ module.exports =
 
     @projectPathsSubscription = atom.project.onDidChangePaths () =>
       @projectPaths = null
-      @stopLoadPathsTask()
       @startLoadPathsTask()
 
     @projectFilesSubscription = atom.project.onDidChangeFiles (events) =>
       for event in events
+        # first check if it is a path event (we'll reindex competely in that case)
+        try
+          if fs.lstatSync(event.path).isDirectory()
+            @projectPaths = null
+            @startLoadPathsTask()
+        catch
+          console.log event.path, 'has already disappeared'
+
+        # now deal with file events incrementally
         if event.action == 'created'
           @switchMapAdd event.path
 
