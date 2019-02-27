@@ -22,6 +22,28 @@ module.exports =
       default: false
       description: 'Open new files as pending tabs.'
       order: 3
+    splitPane:
+      type: 'string'
+      default: 'none'
+      description: """Whether to open new files in a different pane. Useful for viewing header and source files
+                      side-by-side."""
+      enum: [
+        {
+          value: 'none',
+          description: 'Open new files in the same pane.'
+        },
+        {
+          value: 'horizontal',
+          description: """Open new files in a different pane on the left or right. A new pane on the left or
+                          right will be created if none exists."""
+        },
+        {
+          value: 'vertical',
+          description: """Open new files in a different pane on the top or bottom. A new pane on the top or
+                          bottom will be created if none exists."""
+        },
+      ]
+      order: 4
 
   active: false
   loadPathsTask: null
@@ -197,11 +219,20 @@ module.exports =
           # find the current file's index in the entry..
           index = entry.indexOf filePath
           if index >= 0
-            # ..and switch to the next one
-            atom.workspace.open entry[(index + entry.length + step) % entry.length], {
+            openOptions =
               searchAllPanes: !atom.config.get('switch-header-source.samePane'),
-              pending: atom.config.get('switch-header-source.newTabPending')
-            }
+              pending: atom.config.get('switch-header-source.newTabPending'),
 
+            activePane = atom.workspace.getActivePane()
+            switch atom.config.get('switch-header-source.splitPane')
+              when 'horizontal'
+                isLeftMost = (activePane.id == activePane.findLeftmostSibling().id)
+                openOptions.split = (if isLeftMost then 'right' else 'left')
+              when 'vertical'
+                isTopMost = (activePane.id == activePane.findTopmostSibling().id)
+                openOptions.split = (if isTopMost then 'down' else 'up')
+
+            # ..and switch to the next one
+            atom.workspace.open entry[(index + entry.length + step) % entry.length], openOptions
     catch error
       console.log error
