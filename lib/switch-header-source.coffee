@@ -131,14 +131,20 @@ module.exports =
     if @busyProvider
       @busyProvider.add('Indexing project')
 
-    # start the path-loader task
-    @loadPathsTask = pathLoader.startTask (projectPaths) =>
+    # dummy metricsReporter
+    reporter = { sendCrawlEvent: -> }
+
+    # fuzzy-finder task
+    task = (projectPaths) =>
       @switchMap = new Map
       for filePath in projectPaths
         @switchMapAdd filePath
 
       if @busyProvider
         @busyProvider.clear()
+
+    # start the path-loader task
+    @loadPathsTask = pathLoader.startTask task, reporter
 
     @projectPathsSubscription = atom.project.onDidChangePaths () =>
       @projectPaths = null
