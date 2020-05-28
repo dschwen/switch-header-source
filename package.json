@@ -10,14 +10,14 @@
       }
     }
   },
-  "repository": "https://github.com/dschwen/switch-header-source",
+  "repository": "git@github.com:dschwen/switch-header-source",
   "license": "MIT",
   "engines": {
     "atom": ">=1.23.0"
   },
   "dependencies": {
-    "fs-plus": "^3.0.0",
-    "jquery": ">=3.4.0",
+    "fs-plus": ">=3.1.0",
+    "jquery": ">=3.5.0",
     "atom-package-deps": "latest"
   },
   "package-deps": [
