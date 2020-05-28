@@ -1,7 +1,7 @@
 {
   "name": "switch-header-source",
   "main": "./lib/switch-header-source",
-  "version": "0.34.1",
+  "version": "0.34.2",
   "description": "Quick switching between C/C++/Objective-C header and source files",
   "consumedServices": {
     "busy-signal": {
