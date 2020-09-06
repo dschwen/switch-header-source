@@ -21,7 +21,9 @@
     "atom-package-deps": "latest"
   },
   "package-deps": [
-    "busy-signal"
+    {
+      "name": "busy-signal"
+    }
   ],
   "keywords": [
     "C++",
